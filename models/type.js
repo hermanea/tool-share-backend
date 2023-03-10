@@ -4,7 +4,7 @@ const sequelize = require('../config/connection');
 class Type extends Model {}
 
 Type.init({
-    Name:{
+    name:{
         type: DataTypes.STRING,
         allowNull:false,
         validate:{

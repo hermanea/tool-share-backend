@@ -20,7 +20,7 @@ Tool.belongsTo(Type,{
     onDelete:"CASCADE"
 });
 
-Type.hasmany(Tool)
+Type.hasMany(Tool)
 
 User.belongsTo(Share,{
     onDelete:"CASCADE",
