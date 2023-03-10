@@ -3,7 +3,7 @@ const sequelize = require('../config/connection');
 
 class tool extends Model {}
 
-book.init({
+tool.init({
     toolname:{
         type: DataTypes.STRING,
         allowNull:false,
@@ -17,7 +17,25 @@ book.init({
          validate:{
             len:[1]
         }   
-    }
+    },
+    type_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Type',
+            key: 'id',
+        },
+    },
+    owner_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'User',
+            key: 'id',
+        },
+    },
+
+
 },{
     sequelize,
 });

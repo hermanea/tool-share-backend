@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { User, Tool, Type } = require('../models');
+const { User, Tool, Share, Type } = require('../models');
+const jwt = require("jsonwebtoken");
 
 
 // Get all tools
@@ -29,8 +30,8 @@ router.post("/",(req,res)=>{
             {
             toolname:req.body.toolname,
             description:req.body.description,
-            TypeId:req.body.TypeId,
-            UserId: tokenData.Id
+            type_Id:req.body.TypeId,
+            owner_Id: tokenData.Id
         }
         ).then(newTool=>{
             res.json(newTool);

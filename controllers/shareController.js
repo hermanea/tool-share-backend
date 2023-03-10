@@ -43,3 +43,5 @@ router.post("/", (req, res) => {
       return res.status(403).json({ msg: "Invalid Token." });
     }
 });
+
+module.exports = router;
