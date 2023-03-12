@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcrypt");
-const { User, Tool, } = require("../models");
+const bcrypt = require('bcrypt');
+const { User, Tool, Share } = require("../models");
 const jwt = require("jsonwebtoken");
 
 // Signup user 
@@ -64,7 +64,7 @@ router.post("/login", (req, res) => {
     })
     .catch((err) => {
         console.log(err);
-        res.status({ msg: "Error.", err })
+        res.status(500).json({ msg: "Error.", err })
     });
 });
  
@@ -83,7 +83,7 @@ router.get("/isValidToken", (req, res) => {
 });
 
 // Get user with their shares.
-router.get("/:id", (req, res) => {
+router.get("/:id/shares", (req, res) => {
     User.findByPk(req.params.id, {
         include: [Share],
     })
@@ -97,7 +97,7 @@ router.get("/:id", (req, res) => {
 });
 
 // Get user with their tools.
-router.get("/:id", (req, res) => {
+router.get("/:id/tools", (req, res) => {
     User.findByPk(req.params.id, {
         include: [Tool],
     })

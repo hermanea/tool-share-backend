@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Share, User, } = require("../models");
+const { Share, User, Tool } = require("../models");
 const jwt = require("jsonwebtoken");
 
 // Get all share requests.
@@ -14,7 +14,7 @@ router.get("/", (req, res) => {
         {
           model: User,
           as: 'Owner',
-        }
+        },
         { 
           model: Tool,
         }
@@ -42,8 +42,8 @@ router.post("/", (req, res) => {
         notes: req.body.notes,
         confirmed: false,
         borrowed_by: tokenData.Id,
-        tool_id: tool.id,
-        owner_id: tool.Owner_Id
+        tool_id: Tool.id,
+        owner_id: Tool.Owner_Id
       })
         .then((newShare) => {
             res.json(newShare);
@@ -73,6 +73,5 @@ router.put('/shares/:id', async (req, res) => {
       res.status(500).json({ error: 'Server error.' });
     }
 });
-
 
 module.exports = router;
