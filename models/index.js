@@ -1,39 +1,38 @@
-const User = require("./user");
-const Tool = require("./tool");
-const Type = require("./type");
-const Share = require("./share");
+const User = require("./User");
+const Tool = require("./Tool");
+const Type = require("./Type");
+const Share = require("./Share");
 
 Tool.belongsTo(User,{
     onDelete:"CASCADE",
-    as:'owner',
-    foreignKey: {
-        allowNull: false
-    }
+    as: 'Owner',
+    foreignKey: 'Owner_Id'
 });
 
-Tool.belongsTo(User, {
-    onDelete:"CASCADE",
-    as:'borrower'
-});
+User.hasMany(Tool)
 
 Tool.belongsTo(Type,{
-    onDelete:"CASCADE"
+    onDelete:"CASCADE",
+    foreignKey: "Tool_Id"
 });
 
 Type.hasMany(Tool)
 
 User.belongsTo(Share,{
-    onDelete:"CASCADE",
-    as:'lender',
-    foreignKey: {
-        allowNull: false
-    }
+    as: 'Owner',
+    foreignKey: 'Owner_Id'
 });
 
 User.belongsTo(Share, {
-    onDelete:"CASCADE",
-    as:'borrower'
+    as: 'Borrower',
+    foreignKey: 'Borrower_Id'
 });
+
+Tool.belongsTo(Share, {
+    foreignKey: 'Tool_Id'
+})
+
+User.hasMany(Share)
 
 module.exports = {
     User,

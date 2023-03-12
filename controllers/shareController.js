@@ -6,7 +6,19 @@ const jwt = require("jsonwebtoken");
 // Get all share requests.
 router.get("/", (req, res) => {
     Share.findAll({
-      include: [User],
+      include: [
+        { 
+          model: User,
+          as: 'Borrower'
+        },
+        {
+          model: User,
+          as: 'Owner',
+        }
+        { 
+          model: Tool,
+        }
+      ],
     })
       .then((allShares) => {
         res.json(allShares);
@@ -28,9 +40,10 @@ router.post("/", (req, res) => {
       Share.create({
         date: req.body.date,
         notes: req.body.notes,
-        borrowed_by: tokenData.id,
-        tool_Id: req.body.toolId,
-        owner_Id: req.body.ownerId
+        confirmed: false,
+        borrowed_by: tokenData.Id,
+        tool_id: tool.id,
+        owner_id: tool.Owner_Id
       })
         .then((newShare) => {
             res.json(newShare);
@@ -43,5 +56,23 @@ router.post("/", (req, res) => {
       return res.status(403).json({ msg: "Invalid Token." });
     }
 });
+
+// Update share request so owner can change boolean to true.
+router.put('/shares/:id', async (req, res) => {
+    try {
+      const share = await Share.findByPk(req.params.id);
+      if (!share) {
+        res.status(404).json({ error: 'Share not found.' });
+        return;
+      }
+      share.confirmed = true;
+      await share.save();
+      res.json(share);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error.' });
+    }
+});
+
 
 module.exports = router;
