@@ -1,10 +1,10 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 
-class tool extends Model {}
+class Tool extends Model {}
 
-tool.init({
-    toolname:{
+Tool.init({
+    name:{
         type: DataTypes.STRING,
         allowNull:false,
         validate:{
@@ -18,26 +18,12 @@ tool.init({
             len:[1]
         }   
     },
-    type_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Type',
-            key: 'id',
-        },
-    },
-    owner_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'User',
-            key: 'id',
-        },
-    },
-
-
+    available: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    }
 },{
     sequelize,
 });
 
-module.exports=tool
+module.exports= Tool
