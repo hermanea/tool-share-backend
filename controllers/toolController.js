@@ -120,29 +120,6 @@ router.post("/",(req,res)=>{
     }
 });
 
-// Include tool in share
-const includeToolInShare = async (req, res) => {
-  try {
-    const tool = await Tool.findByPk(req.params.toolId);
-
-    if (!tool) {
-      return res.status(404).json({ message: 'Tool not found' });
-    }
-
-    if (!tool.available) {
-      return res.status(400).json({ message: 'Tool is not available' });
-    }
-
-    await tool.update({ available: false });
-
-    res.status(200).json({ message: 'Tool included in share.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error.' });
-  }
-};
-router.put('/includeInShare/:toolId', includeToolInShare);
-
 // Mark tool as borrowed.
 router.put('/borrow/:id', async (req, res) => {
   try {
