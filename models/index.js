@@ -1,7 +1,7 @@
-const User = require("./User");
-const Tool = require("./Tool");
-const Type = require("./Type");
-const Share = require("./Share");
+const User = require("./user");
+const Tool = require("./tool");
+const Type = require("./type");
+const Share = require("./share");
 
 User.hasMany(Tool, {
     onDelete:"CASCADE",
