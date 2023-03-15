@@ -3,16 +3,15 @@ const router = express.Router();
 const { User, Tool, Share, Type } = require('../models');
 const jwt = require("jsonwebtoken");
 
-
-// Get all tools
+// Get all tools with User
 router.get("/", (req, res) => {
     Tool.findAll({
       include: [
         {
           model: User,
-          as: 'Owner'
-        },
-        ],
+        as: 'Owner'
+      }
+    ],
     })
       .then((allTools) => {
         res.json(allTools);
@@ -23,20 +22,92 @@ router.get("/", (req, res) => {
       });
 });
 
+// Get all available tools.
+router.get("/availableTools", (req, res) => {
+  Tool.findAll({
+    where: {
+      available: true
+    },
+    include: [
+      {
+        model: User,
+        as: 'Owner'
+      },
+    ],
+  })
+    .then((allTools) => {
+      res.json(allTools);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ msg: "Error.", err });
+    });
+});
+
+router.get("/ownerTools", (req, res) => {
+  const token = req.headers?.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(403).json({ msg: "Please login to view your shares." });
+    }
+  try {
+    const tokenData = jwt.verify(token, process.env.JWT_SECRET);
+    Tool.findAll({
+      where: {
+        Owner_Id: tokenData.id
+      },
+      include: [
+        {
+          model: User,
+          as: 'Owner'
+        },
+      ],
+    })
+      .then((ownerTools) => {
+        res.json(ownerTools);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ msg: "Error.", err });
+      });
+  } catch (err) {
+    return res.status(403).json({ msg: "Invalid Token." });
+  }
+});
+
+
+// Get tool by id
+router.get("/:id", (req, res) => {
+  Tool.findByPk(req.params.id, {
+    include: [
+      {
+        model: User,
+        as: 'Owner'
+      },
+      ],
+  })
+    .then((tool) => {
+      res.json(tool);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ msg: "Error.", err });
+    });
+});
+
 // Add a tool route
 router.post("/",(req,res)=>{
     const token = req.headers?.authorization?.split(" ")[1];
     if (!token) {
-      return res.status(403).json({ msg: "Please login to add a tool!" });
+      return res.status(403).json({ msg: "Please login to add a tool." });
     }
     try {
       const tokenData = jwt.verify(token, process.env.JWT_SECRET);
         Tool.create(
             {
-            name:req.body.name,
-            description:req.body.description,
-            Type_Id:req.body.TypeId,
-            Owner_Id:tokenData.Id
+            toolname: req.body.toolname,
+            description: req.body.description,
+            Type_Id: req.body.typeId,
+            Owner_Id: tokenData.id,
         }
         ).then(newTool=>{
             res.json(newTool);
@@ -49,7 +120,8 @@ router.post("/",(req,res)=>{
     }
 });
 
-exports.includeToolInShare = async (req, res) => {
+// Include tool in share
+const includeToolInShare = async (req, res) => {
   try {
     const tool = await Tool.findByPk(req.params.toolId);
 
@@ -69,12 +141,64 @@ exports.includeToolInShare = async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 };
+router.put('/includeInShare/:toolId', includeToolInShare);
+
+// Mark tool as borrowed.
+router.put('/borrow/:id', async (req, res) => {
+  try {
+    const tool = await Tool.findByPk(req.params.id);
+    if (!tool) {
+      res.status(404).json({ error: 'Share not found.' });
+      return;
+    }
+
+    tool.available = false;
+    
+    await tool.save();
+    res.json(tool);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// Return tool
+router.put("/return/:id", async (req, res) => {
+  const token = req.headers?.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(403).json({ msg: "Please login to return a tool." });
+  }
+  const tokenData = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = tokenData.id;
+  
+  try {
+    const tool = await Tool.findByPk(req.params.id);
+    
+    if (!tool) {
+          return res.status(404).json({ message: 'Tool not found.' });
+      }
+      if (tool.available) {
+        return res.status(400).json({ message: 'Tool is already available' });
+      }
+      if (tool.Borrower_Id !== userId) {
+        return res.status(403).json({ message: 'You are not authorized to return this tool.' });
+      }
+      
+      tool.update = true;
+      
+      await tool.save();
+      res.json(tool);
+    } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server error.'})
+  }
+});
 
 // Show all tool for tool type when searching
-router.get("/tools/bytype/:id", (req, res) => {
+router.get("/bytype/:id", (req, res) => {
     const typeId = req.params.id;
     Tool.findAll({
-      where: { TypeId: typeId, borrowed_by: null },
+      where: { Type_Id: typeId, Available: true },
       include: [
         {
           model: User,
@@ -89,63 +213,6 @@ router.get("/tools/bytype/:id", (req, res) => {
     console.log(err);
     res.status(500).json({ msg: "Error.", err });
     });
-});
-
-// Show tools currently lent
-router.get("/tools/borrowed/:id", (req, res) => {
-    Tool.findAll({
-      where: { borrowed_by: req.params.id },
-      include: [
-        {
-          model: User,
-          as: 'Owner'
-        },
-      ],
-    })
-      .then((tools) => {
-        res.json(tools);
-      })
-      .catch((err) => {
-        res.status(500).json({ msg: "Error.", err });
-    });
-});
-
-// Return tool
-router.put("/tools/return/:id", async (req, res) => {
-    const toolId = req.params.id;
-    const returnData = req.body;
-    const userId = getUserIdFromToken(req.headers.authorization);
-
-    try {
-      const tool = await Tool.findByPk(req.params.toolId);
-
-      if (err) {
-          return res.status(500).json({ error: err.message });
-      }
-      if (!tool) {
-          return res.status(404).json({ message: 'Tool not found.' });
-      }
-      if (tool.available) {
-        return res.status(400).json({ message: 'Tool is already available' });
-      }
-      if (tool.borrowed_by !== userId) {
-          return res.status(403).json({ message: 'You are not authorized to return this tool.' });
-      }
-
-      await tool.update({ available: true });
-
-    tool.returned_on = new Date();
-    Object.assign(tool, returnData);
-    tool.save((err) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json(tool);
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Server error.'})
-  }
 });
 
 // Delete a tool Protected.
@@ -166,7 +233,7 @@ router.delete("/:toolId", (req, res) => {
           if (foundTool.UserId !== tokenData.Id) {
             return res
               .status(403)
-              .json({ msg: "you can only delete plays you created!" });
+              .json({ msg: "You may only delete tools that you own." });
           }
           Tool.destroy({
             where: {

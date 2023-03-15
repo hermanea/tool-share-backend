@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcrypt');
-const { User, Tool, Share } = require("../models");
+const bcrypt = require("bcrypt");
+const { User, Tool, Share, Type } = require("../models");
 const jwt = require("jsonwebtoken");
 
 // Signup user 
 router.post("/", (req, res) => {
+  console.log(req.body);
     User.create({
-        email: req.body.email,
-        username: req.body.username,
-        password: req.body.password,
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
     })
     .then((newUser) => {
         const token = jwt.sign(
@@ -18,9 +19,6 @@ router.post("/", (req, res) => {
                 id: newUser.id,
             },
             process.env.JWT_SECRET,
-            {
-                expireIn: "12hr",
-            }
         );
         res.json({
             token,
@@ -53,9 +51,6 @@ router.post("/login", (req, res) => {
                 id: userData.id
             },
             process.env.JWT_SECRET,
-            {
-                expiresIn: "12h",
-            }
         );
         res.json({
             token,
@@ -67,8 +62,9 @@ router.post("/login", (req, res) => {
         res.status(500).json({ msg: "Error.", err })
     });
 });
- 
-router.get("/isValidToken", (req, res) => {
+
+// Auth.
+router.get("/auth/isValidToken", (req, res) => {
     const token = req.headers?.authorization?.split(" ")[1];
     if(!token) {
         return res.status(403).json({ isValid: false, msg: "Please login to request a tool!"});
@@ -82,10 +78,151 @@ router.get("/isValidToken", (req, res) => {
     }
 });
 
-// Get user with their shares.
-router.get("/:id/shares", (req, res) => {
+// get all users
+router.get("/", (req, res) => {
+    User.findAll({
+        include: [
+            {
+              model: Share,
+              as: 'SharesAsBorrower',
+              include: [
+                {
+                  model: Tool,
+                  include: [
+                    {
+                      model: Type,
+                    },
+                    {
+                      model: User,
+                      as: 'Owner',
+                    },
+                    {
+                      model: Share,
+                      include: [
+                        {
+                          model: User,
+                          as: 'Borrower',
+                        },
+                        {
+                          model: User,
+                          as: 'Lender',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              model: Share,
+              as: 'SharesAsLender',
+              include: [
+                {
+                  model: Tool,
+                  include: [
+                    {
+                      model: Type,
+                    },
+                    {
+                      model: User,
+                      as: 'Owner',
+                    },
+                    {
+                      model: Share,
+                      include: [
+                        {
+                          model: User,
+                          as: 'Borrower',
+                        },
+                        {
+                          model: User,
+                          as: 'Lender',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        })
+    .then(userData=>{
+        res.json(userData)
+    })
+    .catch((err) => {
+        console.log(err);
+        res.json({ msg: "Error.", err });
+    });
+});
+
+
+// Find one user.
+router.get("/:id", (req, res) => {
     User.findByPk(req.params.id, {
-        include: [Share],
+        include: [
+          {
+            model: Share,
+            as: 'SharesAsBorrower',
+            include: [
+              {
+                model: Tool,
+                include: [
+                  {
+                    model: Type,
+                  },
+                  {
+                    model: User,
+                    as: 'Owner',
+                  },
+                  {
+                    model: Share,
+                    include: [
+                      {
+                        model: User,
+                        as: 'Borrower',
+                      },
+                      {
+                        model: User,
+                        as: 'Lender',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: Share,
+            as: 'SharesAsLender',
+            include: [
+              {
+                model: Tool,
+                include: [
+                  {
+                    model: Type,
+                  },
+                  {
+                    model: User,
+                    as: 'Owner',
+                  },
+                  {
+                    model: Share,
+                    include: [
+                      {
+                        model: User,
+                        as: 'Borrower',
+                      },
+                      {
+                        model: User,
+                        as: 'Lender',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
     })
     .then(userData=>{
         res.json(userData)
@@ -96,18 +233,5 @@ router.get("/:id/shares", (req, res) => {
     });
 });
 
-// Get user with their tools.
-router.get("/:id/tools", (req, res) => {
-    User.findByPk(req.params.id, {
-        include: [Tool],
-    })
-    .then(userData=>{
-        res.json(userData)
-    })
-    .catch((err) => {
-        console.log(err);
-        res.json({ msg: "Error.", err });
-    });
-});
-
+ 
 module.exports = router;
