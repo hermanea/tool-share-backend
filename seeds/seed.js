@@ -3,43 +3,43 @@ const { User, Tool, Type, Share } = require('../models');
 
 const users = [
     {
-        email:"evan@evan.com",
         username:"evan",
-        password:"evanpassword"
+        email:"evan@evan.com",
+        password:"evanpassword",
     },
     {
-        email:"andrew@andrew.com",
         username:"andrew",
-        password:"andrewpassword"
+        email:"andrew@andrew.com",
+        password:"andrewpassword",
     }
 ];
 
 const types = [
     {
-        categoryname:"Saw"
+        typename:"Saw",
     },
     {
-        categoryname:"Drill"
+        typename:"Drill",
     },
     {
-        categoryname:"Sander"
+        typename:"Sander",
     }
 ];
 
 const shares = [
     {
         date: new Date(),
-        notes: "borrow request",
-        borrowed_by: 1,
-        tool_id: 2,
-        owner_id: 2
+        notes:"",
+        Borrower_Id: 1,
+        Tool_Id: 2,
+        Lender_Id: 2
     },
     {
         date: new Date(),
-        notes: "borrow request",
-        borrowed_by: 2,
-        tool_id: 1,
-        owner_id: 1
+        notes:"",
+        Borrower_Id: 2,
+        Tool_Id: 1,
+        Lender_Id: 1
     }
 ];
 
@@ -47,14 +47,14 @@ const tools = [
     {
         toolname: "Makita Impact 18v",
         description: "",
-        type_id: 2,
-        owner_id: 1
+        Type_Id: 2,
+        Owner_Id: 1
     },
     {
         toolname: "Festool Oscillating Sander",
         description: "",
-        type_id: 3,
-        owner_id: 2
+        Type_Id: 3,
+        Owner_Id: 2
     }
 ];
 
