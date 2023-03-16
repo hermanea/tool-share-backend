@@ -47,8 +47,8 @@ router.get("/userShares", (req, res) => {
       Share.findAll({
         where: { 
           [Op.or]: [
-            { Borrower_Id: tokenData.Id },
-            { Lender_Id: tokenData.Id }
+            { Borrower_Id: tokenData.id },
+            { Lender_Id: tokenData.id }
           ]
         },
         include: [
@@ -73,6 +73,7 @@ router.get("/userShares", (req, res) => {
       }).then((userShares) => {
         res.json(userShares);
       }).catch((err) => {
+        console.error("Error in userShares route:", err);
         res.status(500).json({ msg: "Error.", err });
     });
     } catch (err) {
