@@ -70,18 +70,26 @@ router.post("/login", (req, res) => {
 });
 
 // Auth.
-router.get("isValidToken", (req, res) => {
-    const token = req.headers?.authorization?.split(" ")[1];
-    if(!token) {
-        return res.status(403).json({ isValid: false, msg: "Please login to request a tool!"});
-    }
-    try {
-        const tokenData = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({ isValid: true, user: tokenData,});
-    } catch (err) {
-        console.log(err);
-        res.status(403).json({ isValid: false, msg: "Invalid Token.", });
-    }
+router.get("/isValidToken", (req, res) => {
+  const token = req.headers?.authorization?.split(" ")[1];
+  if (!token) {
+    return res
+      .status(403)
+      .json({ isValid: false, msg: "Please login." });
+  }
+  try {
+    const tokenData = jwt.verify(token,process.env.JWT_SECRET);
+    res.json({
+      isValid: true,
+      user: tokenData
+
+    });
+  } catch (err) {
+    res.status(403).json({
+      isValid: false,
+      msg: "invalid token",
+    });
+  }
 });
 
 // get all users
