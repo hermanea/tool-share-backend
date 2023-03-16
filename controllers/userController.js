@@ -19,6 +19,9 @@ router.post("/", (req, res) => {
                 id: newUser.id,
             },
             process.env.JWT_SECRET,
+            {
+              expiresIn: "10h",
+            }
         );
         res.json({
             token,
@@ -51,6 +54,9 @@ router.post("/login", (req, res) => {
                 id: userData.id
             },
             process.env.JWT_SECRET,
+            {
+              expiresIn: "10h",
+            }
         );
         res.json({
             token,
