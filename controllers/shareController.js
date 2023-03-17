@@ -39,11 +39,14 @@ router.get("/", (req, res) => {
 // Get all logged in user's shares
 router.get("/userShares", (req, res) => {
     const token = req.headers?.authorization?.split(" ")[1];
+    console.log("Token received in the backend:", token);
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
       if (!token) {
         return res.status(403).json({ msg: "Please login to view your shares." });
       }
     try {
       const tokenData = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("Decoded token data:", tokenData);
       Share.findAll({
         where: { 
           [Op.or]: [
