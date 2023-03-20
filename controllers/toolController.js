@@ -157,11 +157,14 @@ router.put("/return/:id", async (req, res) => {
       if (tool.available) {
         return res.status(400).json({ message: 'Tool is already available' });
       }
-      if (tool.Borrower_Id !== userId) {
+
+      const share = await Share.findOne({ where: { Borrower_Id: userId, Tool_Id: tool.id } });
+
+      if (!share) {
         return res.status(403).json({ message: 'You are not authorized to return this tool.' });
       }
       
-      tool.update = true;
+      tool.available = true;
       
       await tool.save();
       res.json(tool);
@@ -207,7 +210,7 @@ router.delete("/:toolId", (req, res) => {
           if (!foundTool) {
             return res.status(404).json({ msg: "No such tool." });
           }
-          if (foundTool.UserId !== tokenData.Id) {
+          if (foundTool.Owner_Id !== tokenData.id) {
             return res
               .status(403)
               .json({ msg: "You may only delete tools that you own." });
