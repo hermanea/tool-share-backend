@@ -125,7 +125,7 @@ router.post("/", async (req, res) => {
 
     try {
       const tokenData = jwt.verify(token, process.env.JWT_SECRET);
-      const tool = await Tool.findOne({ where: { id: req.body.toolId } });
+      const tool = await Tool.findOne({ where: { id: req.body.Tool_Id } });
       if (!tool) {
         return res.status(404).json({ error: 'Tool not found.' });
       }
