@@ -74,6 +74,7 @@ router.get("/userShares", (req, res) => {
           },
         ],
       }).then((userShares) => {
+        console.log('Fetched userShares:', JSON.stringify(userShares, null, 2));
         res.json(userShares);
       }).catch((err) => {
         console.error("Error in userShares route:", err);
@@ -125,7 +126,7 @@ router.post("/", async (req, res) => {
 
     try {
       const tokenData = jwt.verify(token, process.env.JWT_SECRET);
-      const tool = await Tool.findOne({ where: { id: req.body.Tool_Id } });
+      const tool = await Tool.findOne({ where: { id: req.body.toolId } });
       if (!tool) {
         return res.status(404).json({ error: 'Tool not found.' });
       }
