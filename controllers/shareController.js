@@ -39,16 +39,19 @@ router.get("/", (req, res) => {
 // Get all logged in user's shares
 router.get("/userShares", (req, res) => {
     const token = req.headers?.authorization?.split(" ")[1];
+    console.log("Token received in the backend:", token);
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
       if (!token) {
         return res.status(403).json({ msg: "Please login to view your shares." });
       }
     try {
       const tokenData = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("Decoded token data:", tokenData);
       Share.findAll({
         where: { 
           [Op.or]: [
-            { Borrower_Id: tokenData.Id },
-            { Lender_Id: tokenData.Id }
+            { Borrower_Id: tokenData.id },
+            { Lender_Id: tokenData.id }
           ]
         },
         include: [
@@ -71,8 +74,10 @@ router.get("/userShares", (req, res) => {
           },
         ],
       }).then((userShares) => {
+        console.log('Fetched userShares:', JSON.stringify(userShares, null, 2));
         res.json(userShares);
       }).catch((err) => {
+        console.error("Error in userShares route:", err);
         res.status(500).json({ msg: "Error.", err });
     });
     } catch (err) {
